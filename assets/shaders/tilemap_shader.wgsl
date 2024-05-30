@@ -3,7 +3,7 @@
 @group(2) @binding(0) var<uniform> material_color: vec4<f32>;
 @group(2) @binding(1) var tilemap_texture: texture_2d<f32>;
 @group(2) @binding(2) var tilemap_texture_sampler: sampler;
-@group(2) @binding(3) var<uniform> tile_data: array<vec2>;
+@group(2) @binding(3) var<storage> tile_data: array<vec2<f32>>;
 @group(2) @binding(4) var<uniform> map_width: u32;
 
 

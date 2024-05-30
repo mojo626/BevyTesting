@@ -3,10 +3,16 @@
 use std::array;
 
 use bevy::{
-    math::bounding::{Aabb2d, IntersectsVolume}, prelude::*, render::render_resource::{AsBindGroup, ShaderRef}, sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle, Mesh2dHandle}, window::close_on_esc
+    ecs::storage, math::bounding::{Aabb2d, IntersectsVolume}, prelude::*, render::render_resource::{AsBindGroup, ShaderRef}, sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle, Mesh2dHandle}, window::close_on_esc
 };
 
+use bevy_common_assets::json::JsonAssetPlugin;
+use tilemap_manager::generate_tilemap_arr;
 
+
+use crate::tilemap_manager::Tilemap;
+
+mod tilemap_manager;
 
 const PLAYER_SPEED: f32 = 2.0;
 const PLAYER_SIZE: f32 = 4.0;
@@ -15,6 +21,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(Material2dPlugin::<TilemapMaterial>::default())
+        .add_plugins(JsonAssetPlugin::<Tilemap>::new(&["map.json"]))
         .add_systems(Startup, setup)
         .add_systems(
             FixedUpdate,
@@ -38,6 +45,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<TilemapMaterial>>,
     asset_server: Res<AssetServer>,
+    json_assets: Res<Assets<Tilemap>>,
 ) {
     commands.spawn(Camera2dBundle::default());
     
@@ -55,6 +63,10 @@ fn setup(
         Collider,
     ));
 
+    let mut arr:Vec<Vec2> = Vec::new();
+
+    let arr2 = generate_tilemap_arr(&asset_server, &json_assets);
+
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(1.0, 1.0))),
@@ -62,7 +74,7 @@ fn setup(
                 TilemapMaterial {
                     color: Color::BLUE,
                     tilemap_texture: Some(asset_server.load("sprites/tilemap.png")),
-                    tile_data: array[10],
+                    tile_data: arr,
                     map_width: 10,
                 }
             ),
@@ -104,7 +116,7 @@ fn check_for_collisions(
         let collision = Aabb2d::new(player_transform.translation.truncate(), assets.get(player_handle).unwrap().size().as_vec2() * player_transform.scale.truncate() / 2.0)
             .intersects(&Aabb2d::new(transform.translation.truncate(), transform.scale.truncate() / 2.0));
 
-        println!("{}", collision);
+        //println!("{}", collision);
     }
 }
 
@@ -118,7 +130,7 @@ struct TilemapMaterial {
     #[texture(1)]
     #[sampler(2)]
     tilemap_texture: Option<Handle<Image>>,
-    #[uniform(3)]
+    #[storage(3)]
     tile_data: Vec<Vec2>,
     #[uniform(4)]
     map_width: u32,
