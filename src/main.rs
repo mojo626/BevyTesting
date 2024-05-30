@@ -45,7 +45,6 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<TilemapMaterial>>,
     asset_server: Res<AssetServer>,
-    json_assets: Res<Assets<Tilemap>>,
 ) {
     commands.spawn(Camera2dBundle::default());
     
@@ -65,7 +64,7 @@ fn setup(
 
     let mut arr:Vec<Vec2> = Vec::new();
 
-    let arr2 = generate_tilemap_arr(&asset_server, &json_assets);
+    let arr2 = generate_tilemap_arr(8);
 
     commands.spawn((
         MaterialMesh2dBundle {
